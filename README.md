@@ -2,6 +2,49 @@
 
 Action to export data from DynamoDB table to S3 bucket.
 
+## Prerequisites
+
+To use this action, the IAM role that executes the action must be allowed the following actions.
+
+- `dynamodb:DescribeTable`
+- `dynamodb:ExportTableToPointInTime`
+- `dynamodb:DescribeExport`
+- `s3:PutObject`
+- `s3:PubObjectAcl`
+- `s3:AbortMultipartUpload`
+
+Example of IAM policy document:
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Action": [
+				"dynamodb:ExportTableToPointInTime",
+				"dynamodb:DescribeTable"
+			],
+			"Effect": "Allow",
+			"Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>"
+		},
+		{
+			"Action": "dynamodb:DescribeExport",
+			"Effect": "Allow",
+			"Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>/export/*"
+		},
+		{
+			"Action": [
+				"s3:PutObjectAcl",
+				"s3:PutObject",
+				"s3:AbortMultipartUpload"
+			],
+			"Effect": "Allow",
+			"Resource": "arn:aws:s3:::<S3_BUCKET>/*"
+		}
+	]
+}
+```
+
 ## Usage
 
 ```yaml
