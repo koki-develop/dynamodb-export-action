@@ -39,7 +39,7 @@ export async function run(): Promise<void> {
       new ExportTableToPointInTimeCommand({
         TableArn: tableDetail.TableArn,
         S3Bucket: s3Bucket,
-        S3Prefix: s3Prefix,
+        S3Prefix: s3Prefix === '' ? undefined : s3Prefix,
         ExportFormat: exportFormat
       })
     )
