@@ -4,7 +4,8 @@ Action to export data from DynamoDB table to S3 bucket.
 
 ## Prerequisites
 
-To use this action, the IAM role that executes the action must be allowed the following actions.
+To use this action, the IAM role that executes the action must be allowed the
+following actions.
 
 - `dynamodb:DescribeTable`
 - `dynamodb:ExportTableToPointInTime`
@@ -20,10 +21,7 @@ Example of IAM policy document:
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Action": [
-        "dynamodb:ExportTableToPointInTime",
-        "dynamodb:DescribeTable"
-      ],
+      "Action": ["dynamodb:ExportTableToPointInTime", "dynamodb:DescribeTable"],
       "Effect": "Allow",
       "Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>"
     },
@@ -33,11 +31,7 @@ Example of IAM policy document:
       "Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>/export/*"
     },
     {
-      "Action": [
-        "s3:PutObjectAcl",
-        "s3:PutObject",
-        "s3:AbortMultipartUpload"
-      ],
+      "Action": ["s3:PutObjectAcl", "s3:PutObject", "s3:AbortMultipartUpload"],
       "Effect": "Allow",
       "Resource": "arn:aws:s3:::<S3_BUCKET>/*"
     }
@@ -59,9 +53,11 @@ Example of IAM policy document:
 ### Inputs
 
 - `table` - (**Required**) The name of the DynamoDB table to export data from.
-- `s3-bucket` - (**Required**) The name of the Amazon S3 bucket to export the snapshot to.
+- `s3-bucket` - (**Required**) The name of the Amazon S3 bucket to export the
+  snapshot to.
 - `s3-prefix` - (Optional) S3 prefix to export data to.
-- `export-format` - (Optional) The format for the exported data. Valid values are `DYNAMODB_JSON` or `ION`.  The default value is `DYNAMODB_JSON`.
+- `export-format` - (Optional) The format for the exported data. Valid values
+  are `DYNAMODB_JSON` or `ION`. The default value is `DYNAMODB_JSON`.
 
 ### Outputs
 
