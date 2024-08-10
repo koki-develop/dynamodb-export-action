@@ -51058,6 +51058,66 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 1732:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.waitForExport = exports.exportTable = exports.describeTable = void 0;
+const client_dynamodb_1 = __nccwpck_require__(3363);
+const _client = new client_dynamodb_1.DynamoDBClient();
+const describeTable = async (name) => {
+    const response = await _client.send(new client_dynamodb_1.DescribeTableCommand({ TableName: name }));
+    const table = response.Table;
+    return {
+        arn: table.TableArn,
+        name: table.TableName
+    };
+};
+exports.describeTable = describeTable;
+const exportTable = async (options) => {
+    const response = await _client.send(new client_dynamodb_1.ExportTableToPointInTimeCommand({
+        TableArn: options.tableArn,
+        S3Bucket: options.s3Bucket,
+        S3Prefix: options.s3Prefix === '' ? undefined : options.s3Prefix,
+        ExportFormat: options.format
+    }));
+    const exportDetail = response.ExportDescription;
+    return _exportDescriptionToExport(exportDetail);
+};
+exports.exportTable = exportTable;
+const waitForExport = async (arn) => {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        const response = await _client.send(new client_dynamodb_1.DescribeExportCommand({ ExportArn: arn }));
+        const exportDetail = response.ExportDescription;
+        const status = exportDetail.ExportStatus;
+        switch (status) {
+            case client_dynamodb_1.ExportStatus.IN_PROGRESS:
+                await new Promise(resolve => setTimeout(resolve, 10_000));
+                break;
+            case client_dynamodb_1.ExportStatus.COMPLETED:
+                return _exportDescriptionToExport(exportDetail);
+            case client_dynamodb_1.ExportStatus.FAILED:
+                throw new Error(`Export failed: ${exportDetail.FailureMessage}`);
+            default:
+                throw new Error(`Unexpected export status: ${status}`);
+        }
+    }
+};
+exports.waitForExport = waitForExport;
+const _exportDescriptionToExport = (description) => {
+    return {
+        arn: description.ExportArn,
+        id: description.ExportArn.split('/').slice(-1)[0],
+        exportManifest: description.ExportManifest
+    };
+};
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -51090,54 +51150,46 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const client_dynamodb_1 = __nccwpck_require__(3363);
+const dynamodb_1 = __nccwpck_require__(1732);
 async function run() {
     try {
-        const table = core.getInput('table');
-        const s3Bucket = core.getInput('s3-bucket');
-        const s3Prefix = core.getInput('s3-prefix');
-        const exportFormat = core.getInput('export-format');
-        switch (exportFormat) {
+        const inputs = {
+            table: core.getInput('table'),
+            s3Bucket: core.getInput('s3-bucket'),
+            s3Prefix: core.getInput('s3-prefix'),
+            exportFormat: core.getInput('export-format')
+        };
+        switch (inputs.exportFormat) {
             case client_dynamodb_1.ExportFormat.DYNAMODB_JSON:
             case client_dynamodb_1.ExportFormat.ION:
                 break;
             default:
-                throw new Error(`Unsupported export format: ${exportFormat}`);
+                throw new Error(`Unsupported export format: ${inputs.exportFormat}`);
         }
-        const client = new client_dynamodb_1.DynamoDBClient();
-        const describeTableResponse = await client.send(new client_dynamodb_1.DescribeTableCommand({ TableName: table }));
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const tableDetail = describeTableResponse.Table;
-        const exportResponse = await client.send(new client_dynamodb_1.ExportTableToPointInTimeCommand({
-            TableArn: tableDetail.TableArn,
-            S3Bucket: s3Bucket,
-            S3Prefix: s3Prefix === '' ? undefined : s3Prefix,
-            ExportFormat: exportFormat
-        }));
-        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const exportArn = exportResponse.ExportDescription.ExportArn;
-        core.setOutput('export-arn', exportArn);
-        const exportId = exportArn.split('/').slice(-1)[0];
-        core.setOutput('export-id', exportId);
-        let status = client_dynamodb_1.ExportStatus.IN_PROGRESS;
-        do {
-            const describeExportResponse = await client.send(new client_dynamodb_1.DescribeExportCommand({ ExportArn: exportArn }));
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const exportDetail = describeExportResponse.ExportDescription;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            status = exportDetail.ExportStatus;
-            switch (status) {
-                case client_dynamodb_1.ExportStatus.IN_PROGRESS:
-                    await new Promise(resolve => setTimeout(resolve, 10_000));
-                    break;
-                case client_dynamodb_1.ExportStatus.COMPLETED:
-                    core.info('Export completed.');
-                    core.setOutput('export-manifest', exportDetail.ExportManifest);
-                    break;
-                case client_dynamodb_1.ExportStatus.FAILED:
-                    throw new Error(`Export failed: ${exportDetail.FailureMessage}`);
-            }
-        } while (status === client_dynamodb_1.ExportStatus.IN_PROGRESS);
+        // Describe the table
+        const table = await (0, dynamodb_1.describeTable)(inputs.table);
+        core.startGroup('Table details');
+        core.info(`Table name: ${table.name}`);
+        core.info(`Table ARN: ${table.arn}`);
+        core.endGroup();
+        // Export the table
+        const exp = await (0, dynamodb_1.exportTable)({
+            tableArn: table.arn,
+            s3Bucket: inputs.s3Bucket,
+            s3Prefix: inputs.s3Prefix,
+            format: inputs.exportFormat
+        });
+        core.setOutput('export-arn', exp.arn);
+        core.setOutput('export-id', exp.id);
+        core.info(`Exporting table ${table.name} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`);
+        core.startGroup('Export details');
+        core.info(`Export ARN: ${exp.arn}`);
+        core.info(`Export ID: ${exp.id}`);
+        core.endGroup();
+        // Wait for the export to complete
+        const finishedExp = await (0, dynamodb_1.waitForExport)(exp.arn);
+        core.info('Export completed.');
+        core.setOutput('export-manifest', finishedExp.exportManifest);
     }
     catch (error) {
         if (error instanceof Error)

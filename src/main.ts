@@ -1,78 +1,52 @@
 import * as core from '@actions/core'
-import {
-  DescribeExportCommand,
-  DescribeTableCommand,
-  DynamoDBClient,
-  ExportFormat,
-  ExportStatus,
-  ExportTableToPointInTimeCommand
-} from '@aws-sdk/client-dynamodb'
+import { ExportFormat } from '@aws-sdk/client-dynamodb'
+import { describeTable, exportTable, waitForExport } from './dynamodb'
 
 export async function run(): Promise<void> {
   try {
-    const table = core.getInput('table')
-    const s3Bucket = core.getInput('s3-bucket')
-    const s3Prefix = core.getInput('s3-prefix')
-    const exportFormat = core.getInput('export-format')
+    const inputs = {
+      table: core.getInput('table'),
+      s3Bucket: core.getInput('s3-bucket'),
+      s3Prefix: core.getInput('s3-prefix'),
+      exportFormat: core.getInput('export-format')
+    } as const
 
-    switch (exportFormat) {
+    switch (inputs.exportFormat) {
       case ExportFormat.DYNAMODB_JSON:
       case ExportFormat.ION:
         break
       default:
-        throw new Error(`Unsupported export format: ${exportFormat}`)
+        throw new Error(`Unsupported export format: ${inputs.exportFormat}`)
     }
 
-    const client = new DynamoDBClient()
+    // Describe the table
+    const table = await describeTable(inputs.table)
+    core.startGroup('Table details')
+    core.info(`Table name: ${table.name}`)
+    core.info(`Table ARN: ${table.arn}`)
+    core.endGroup()
 
-    const describeTableResponse = await client.send(
-      new DescribeTableCommand({ TableName: table })
-    )
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const tableDetail = describeTableResponse.Table!
-
-    const exportResponse = await client.send(
-      new ExportTableToPointInTimeCommand({
-        TableArn: tableDetail.TableArn,
-        S3Bucket: s3Bucket,
-        S3Prefix: s3Prefix === '' ? undefined : s3Prefix,
-        ExportFormat: exportFormat
-      })
-    )
+    // Export the table
+    const exp = await exportTable({
+      tableArn: table.arn,
+      s3Bucket: inputs.s3Bucket,
+      s3Prefix: inputs.s3Prefix,
+      format: inputs.exportFormat
+    })
+    core.setOutput('export-arn', exp.arn)
+    core.setOutput('export-id', exp.id)
     core.info(
-      `Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`
+      `Exporting table ${table.name} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`
     )
+    core.startGroup('Export details')
+    core.info(`Export ARN: ${exp.arn}`)
+    core.info(`Export ID: ${exp.id}`)
+    core.endGroup()
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const exportArn = exportResponse.ExportDescription!.ExportArn!
-    core.setOutput('export-arn', exportArn)
-
-    const exportId = exportArn.split('/').slice(-1)[0]
-    core.setOutput('export-id', exportId)
-
-    let status: ExportStatus = ExportStatus.IN_PROGRESS
-    do {
-      const describeExportResponse = await client.send(
-        new DescribeExportCommand({ ExportArn: exportArn })
-      )
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const exportDetail = describeExportResponse.ExportDescription!
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      status = exportDetail.ExportStatus!
-
-      switch (status) {
-        case ExportStatus.IN_PROGRESS:
-          await new Promise(resolve => setTimeout(resolve, 10_000))
-          break
-        case ExportStatus.COMPLETED:
-          core.info('Export completed.')
-          core.setOutput('export-manifest', exportDetail.ExportManifest)
-          break
-        case ExportStatus.FAILED:
-          throw new Error(`Export failed: ${exportDetail.FailureMessage}`)
-      }
-    } while (status === ExportStatus.IN_PROGRESS)
+    // Wait for the export to complete
+    const finishedExp = await waitForExport(exp.arn)
+    core.info('Export completed.')
+    core.setOutput('export-manifest', finishedExp.exportManifest)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
     throw error

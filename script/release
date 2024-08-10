@@ -40,8 +40,6 @@ OFF='\033[0m'
 BOLD_RED='\033[1;31m'
 BOLD_GREEN='\033[1;32m'
 BOLD_BLUE='\033[1;34m'
-BOLD_PURPLE='\033[1;35m'
-BOLD_UNDERLINED='\033[1;4m'
 BOLD='\033[1m'
 
 # 1. Retrieve the latest release tag
@@ -68,7 +66,7 @@ else
 fi
 
 # 5. Update the version field in package.json
-npm version $new_tag --no-git-tag-version
+npm version "$new_tag" --no-git-tag-version
 
 # 6. Tag a new release
 git tag "$new_tag" --annotate --message "$new_tag Release"
