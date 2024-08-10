@@ -51111,7 +51111,6 @@ const _exportDescriptionToExport = (description) => {
     return {
         arn: description.ExportArn,
         id: description.ExportArn.split('/').slice(-1)[0],
-        startTime: description.StartTime,
         exportManifest: description.ExportManifest
     };
 };
@@ -51182,11 +51181,10 @@ async function run() {
         });
         core.setOutput('export-arn', exp.arn);
         core.setOutput('export-id', exp.id);
-        core.info(`Exporting table ${table} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`);
+        core.info(`Exporting table ${table.name} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`);
         core.startGroup('Export details');
         core.info(`Export ARN: ${exp.arn}`);
         core.info(`Export ID: ${exp.id}`);
-        core.info(`Start time: ${exp.startTime}`);
         core.endGroup();
         // Wait for the export to complete
         const finishedExp = await (0, dynamodb_1.waitForExport)(exp.arn);
