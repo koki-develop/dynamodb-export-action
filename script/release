@@ -67,15 +67,8 @@ else
 	exit 1
 fi
 
-# 5. Remind user to update the version field in package.json
-echo -e -n "Make sure the version field in package.json is ${BOLD_BLUE}$new_tag${OFF}. Yes? [Y/${BOLD_UNDERLINED}n${OFF}] "
-read -r YN
-
-if [[ ! ($YN == "y" || $YN == "Y") ]]; then
-	# Package.json version field is not up to date
-	echo -e "Please update the package.json version to ${BOLD_PURPLE}$new_tag${OFF} and commit your changes"
-	exit 1
-fi
+# 5. Update the version field in package.json
+npm version $new_tag --no-git-tag-version
 
 # 6. Tag a new release
 git tag "$new_tag" --annotate --message "$new_tag Release"
