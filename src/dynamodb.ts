@@ -57,6 +57,7 @@ export const exportTable = async (options: ExportOptions): Promise<Export> => {
 }
 
 export const waitForExport = async (arn: string): Promise<Export> => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const response = await _client.send(
       new DescribeExportCommand({ ExportArn: arn })
