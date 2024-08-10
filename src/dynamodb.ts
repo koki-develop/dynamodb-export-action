@@ -31,7 +31,6 @@ export const describeTable = async (name: string): Promise<Table> => {
 export type Export = {
   arn: string
   id: string
-  startTime: Date
   exportManifest?: string
 }
 
@@ -83,7 +82,6 @@ const _exportDescriptionToExport = (description: ExportDescription): Export => {
   return {
     arn: description.ExportArn!,
     id: description.ExportArn!.split('/').slice(-1)[0],
-    startTime: description.StartTime!,
     exportManifest: description.ExportManifest
   }
 }

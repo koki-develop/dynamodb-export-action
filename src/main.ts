@@ -41,7 +41,6 @@ export async function run(): Promise<void> {
     core.startGroup('Export details')
     core.info(`Export ARN: ${exp.arn}`)
     core.info(`Export ID: ${exp.id}`)
-    core.info(`Start time: ${exp.startTime}`)
     core.endGroup()
 
     // Wait for the export to complete
