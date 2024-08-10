@@ -31,6 +31,11 @@ export async function run(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const tableDetail = describeTableResponse.Table!
 
+    core.startGroup('Table details')
+    core.info(`Table name: ${tableDetail.TableName}`)
+    core.info(`Table ARN: ${tableDetail.TableArn}`)
+    core.endGroup()
+
     const exportResponse = await client.send(
       new ExportTableToPointInTimeCommand({
         TableArn: tableDetail.TableArn,
@@ -44,11 +49,20 @@ export async function run(): Promise<void> {
     )
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const exportArn = exportResponse.ExportDescription!.ExportArn!
+    const exportDetail = exportResponse.ExportDescription!
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const exportArn = exportDetail.ExportArn!
     core.setOutput('export-arn', exportArn)
 
     const exportId = exportArn.split('/').slice(-1)[0]
     core.setOutput('export-id', exportId)
+
+    core.startGroup('Export details')
+    core.info(`Export ARN: ${exportArn}`)
+    core.info(`Export ID: ${exportId}`)
+    core.info(`Start time: ${exportDetail.StartTime}`)
+    core.endGroup()
 
     let status: ExportStatus = ExportStatus.IN_PROGRESS
     do {
