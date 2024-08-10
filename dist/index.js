@@ -51111,7 +51111,7 @@ async function run() {
         const exportResponse = await client.send(new client_dynamodb_1.ExportTableToPointInTimeCommand({
             TableArn: tableDetail.TableArn,
             S3Bucket: s3Bucket,
-            S3Prefix: s3Prefix,
+            S3Prefix: s3Prefix === '' ? undefined : s3Prefix,
             ExportFormat: exportFormat
         }));
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
