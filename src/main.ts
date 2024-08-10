@@ -32,7 +32,7 @@ export async function run(): Promise<void> {
     const tableDetail = describeTableResponse.Table!
 
     core.info(
-      `Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format.`
+      `Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`
     )
 
     const exportResponse = await client.send(
@@ -63,7 +63,6 @@ export async function run(): Promise<void> {
 
       switch (status) {
         case ExportStatus.IN_PROGRESS:
-          core.info('Export in progress...')
           await new Promise(resolve => setTimeout(resolve, 10_000))
           break
         case ExportStatus.COMPLETED:
