@@ -68,7 +68,7 @@ else
 fi
 
 # 5. Update the version field in package.json
-npm version $new_tag --no-git-tag-version
+npm version "$new_tag" --no-git-tag-version
 
 # 6. Tag a new release
 git tag "$new_tag" --annotate --message "$new_tag Release"
