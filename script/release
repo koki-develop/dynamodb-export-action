@@ -67,6 +67,8 @@ fi
 
 # 5. Update the version field in package.json
 npm version "$new_tag" --no-git-tag-version
+git add package.json package-lock.json
+git commit --message "Release $new_tag"
 
 # 6. Tag a new release
 git tag "$new_tag" --annotate --message "$new_tag Release"
