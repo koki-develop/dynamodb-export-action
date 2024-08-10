@@ -103,7 +103,7 @@ else
 fi
 
 # 9. Push the new tags (with commits, if any) to remote
-git push --follow-tags
+git push --follow-tags $git_remote main
 
 if [ $is_major_release = 'yes' ]; then
 	# New major version tag is pushed with the '--follow-tags' flags
