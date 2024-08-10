@@ -51116,6 +51116,9 @@ async function run() {
         }));
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const exportArn = exportResponse.ExportDescription.ExportArn;
+        core.setOutput('export-arn', exportArn);
+        const exportId = exportArn.split('/').slice(-1)[0];
+        core.setOutput('export-id', exportId);
         let status = client_dynamodb_1.ExportStatus.IN_PROGRESS;
         do {
             const describeExportResponse = await client.send(new client_dynamodb_1.DescribeExportCommand({ ExportArn: exportArn }));
@@ -51126,17 +51129,16 @@ async function run() {
             switch (status) {
                 case client_dynamodb_1.ExportStatus.IN_PROGRESS:
                     core.info('Export in progress...');
-                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    await new Promise(resolve => setTimeout(resolve, 10_000));
                     break;
                 case client_dynamodb_1.ExportStatus.COMPLETED:
                     core.info('Export completed.');
+                    core.setOutput('export-manifest', exportDetail.ExportManifest);
                     break;
                 case client_dynamodb_1.ExportStatus.FAILED:
                     throw new Error(`Export failed: ${exportDetail.FailureMessage}`);
             }
         } while (status === client_dynamodb_1.ExportStatus.IN_PROGRESS);
-        core.setOutput('export-arn', exportArn);
-        core.setOutput('export-manifest', 'EXPORT_MANIFEST');
     }
     catch (error) {
         if (error instanceof Error)
