@@ -17,31 +17,31 @@ Example of IAM policy document:
 
 ```json
 {
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Action": [
-				"dynamodb:ExportTableToPointInTime",
-				"dynamodb:DescribeTable"
-			],
-			"Effect": "Allow",
-			"Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>"
-		},
-		{
-			"Action": "dynamodb:DescribeExport",
-			"Effect": "Allow",
-			"Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>/export/*"
-		},
-		{
-			"Action": [
-				"s3:PutObjectAcl",
-				"s3:PutObject",
-				"s3:AbortMultipartUpload"
-			],
-			"Effect": "Allow",
-			"Resource": "arn:aws:s3:::<S3_BUCKET>/*"
-		}
-	]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "dynamodb:ExportTableToPointInTime",
+        "dynamodb:DescribeTable"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>"
+    },
+    {
+      "Action": "dynamodb:DescribeExport",
+      "Effect": "Allow",
+      "Resource": "arn:aws:dynamodb:<REGION>:<ACCOUNT_ID>:table/<TABLE>/export/*"
+    },
+    {
+      "Action": [
+        "s3:PutObjectAcl",
+        "s3:PutObject",
+        "s3:AbortMultipartUpload"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::<S3_BUCKET>/*"
+    }
+  ]
 }
 ```
 
