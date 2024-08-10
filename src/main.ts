@@ -60,7 +60,7 @@ export async function run(): Promise<void> {
       switch (status) {
         case ExportStatus.IN_PROGRESS:
           core.info('Export in progress...')
-          await new Promise(resolve => setTimeout(resolve, 5000))
+          await new Promise(resolve => setTimeout(resolve, 10_000))
           break
         case ExportStatus.COMPLETED:
           core.info('Export completed.')
