@@ -28,6 +28,7 @@ export async function run(): Promise<void> {
     const describeTableResponse = await client.send(
       new DescribeTableCommand({ TableName: table })
     )
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const tableDetail = describeTableResponse.Table!
 
     core.info(
@@ -42,6 +43,7 @@ export async function run(): Promise<void> {
         ExportFormat: exportFormat
       })
     )
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const exportArn = exportResponse.ExportDescription!.ExportArn
 
     let status: ExportStatus = ExportStatus.IN_PROGRESS
@@ -50,7 +52,9 @@ export async function run(): Promise<void> {
         new DescribeExportCommand({ ExportArn: exportArn })
       )
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const exportDetail = describeExportResponse.ExportDescription!
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       status = exportDetail.ExportStatus!
 
       switch (status) {
