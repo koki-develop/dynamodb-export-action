@@ -36,7 +36,7 @@ export async function run(): Promise<void> {
     core.setOutput('export-arn', exp.arn)
     core.setOutput('export-id', exp.id)
     core.info(
-      `Exporting table ${table} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`
+      `Exporting table ${table.name} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`
     )
     core.startGroup('Export details')
     core.info(`Export ARN: ${exp.arn}`)
