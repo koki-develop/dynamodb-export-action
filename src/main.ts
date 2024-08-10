@@ -45,6 +45,10 @@ export async function run(): Promise<void> {
     )
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const exportArn = exportResponse.ExportDescription!.ExportArn!
+    core.setOutput('export-arn', exportArn)
+
+    const exportId = exportArn.split('/').slice(-1)[0]
+    core.setOutput('export-id', exportId)
 
     let status: ExportStatus = ExportStatus.IN_PROGRESS
     do {
@@ -64,17 +68,12 @@ export async function run(): Promise<void> {
           break
         case ExportStatus.COMPLETED:
           core.info('Export completed.')
+          core.setOutput('export-manifest', exportDetail.ExportManifest)
           break
         case ExportStatus.FAILED:
           throw new Error(`Export failed: ${exportDetail.FailureMessage}`)
       }
     } while (status === ExportStatus.IN_PROGRESS)
-
-    const exportId = exportArn.split('/').slice(-1)[0]
-
-    core.setOutput('export-arn', exportArn)
-    core.setOutput('export-id', exportId)
-    core.setOutput('export-manifest', 'EXPORT_MANIFEST')
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
     throw error
