@@ -1,23 +1,37 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: DynamoDB Export Action
+description: Action to export data from DynamoDB table to S3 bucket.
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: upload
+  color: blue
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  table:
+    description: |-
+      The name of the DynamoDB table to export data from.
     required: true
-    default: '1000'
+  s3-bucket:
+    description: |-
+      The name of the Amazon S3 bucket to export the snapshot to.
+    required: true
 
-# Define your outputs here.
+  s3-prefix:
+    description: 'S3 prefix to export data to.'
+    required: false
+  export-format:
+    description: |-
+      The format for the exported data. Valid values are DYNAMODB_JSON or ION.
+      The default value is DYNAMODB_JSON.
+    required: false
+    default: DYNAMODB_JSON
+
 outputs:
-  time:
-    description: 'Your output description here'
+  export-arn:
+    description: |-
+      The Amazon Resource Name (ARN) of the table export.
+  export-manifest:
+    description: |-
+      The name of the manifest file for the export task.
 
 runs:
   using: node20

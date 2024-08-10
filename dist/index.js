@@ -24951,52 +24951,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
-const wait_1 = __nccwpck_require__(5259);
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
+        const table = core.getInput('table');
+        const s3Bucket = core.getInput('s3-bucket');
+        const s3Prefix = core.getInput('s3-prefix');
+        const exportFormat = core.getInput('export-format');
+        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format.`);
+        // TODO
+        core.setOutput('export-arn', 'EXPORT_ARN');
+        core.setOutput('export-manifest', 'EXPORT_MANIFEST');
     }
     catch (error) {
-        // Fail the workflow run if an error occurs
         if (error instanceof Error)
             core.setFailed(error.message);
+        throw error;
     }
-}
-
-
-/***/ }),
-
-/***/ 5259:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = wait;
-/**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise(resolve => {
-        if (isNaN(milliseconds)) {
-            throw new Error('milliseconds not a number');
-        }
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
 }
 
 
@@ -26896,9 +26866,6 @@ var __webpack_exports__ = {};
 var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-/**
- * The entrypoint for the action.
- */
 const main_1 = __nccwpck_require__(399);
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (0, main_1.run)();
