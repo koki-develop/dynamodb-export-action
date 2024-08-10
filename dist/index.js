@@ -51107,7 +51107,7 @@ async function run() {
         const describeTableResponse = await client.send(new client_dynamodb_1.DescribeTableCommand({ TableName: table }));
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const tableDetail = describeTableResponse.Table;
-        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format.`);
+        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`);
         const exportResponse = await client.send(new client_dynamodb_1.ExportTableToPointInTimeCommand({
             TableArn: tableDetail.TableArn,
             S3Bucket: s3Bucket,
@@ -51128,7 +51128,6 @@ async function run() {
             status = exportDetail.ExportStatus;
             switch (status) {
                 case client_dynamodb_1.ExportStatus.IN_PROGRESS:
-                    core.info('Export in progress...');
                     await new Promise(resolve => setTimeout(resolve, 10_000));
                     break;
                 case client_dynamodb_1.ExportStatus.COMPLETED:
