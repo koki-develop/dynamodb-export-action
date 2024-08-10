@@ -51107,13 +51107,13 @@ async function run() {
         const describeTableResponse = await client.send(new client_dynamodb_1.DescribeTableCommand({ TableName: table }));
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const tableDetail = describeTableResponse.Table;
-        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`);
         const exportResponse = await client.send(new client_dynamodb_1.ExportTableToPointInTimeCommand({
             TableArn: tableDetail.TableArn,
             S3Bucket: s3Bucket,
             S3Prefix: s3Prefix === '' ? undefined : s3Prefix,
             ExportFormat: exportFormat
         }));
+        core.info(`Exporting table ${table} to s3://${s3Bucket}/${s3Prefix} in ${exportFormat} format...`);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const exportArn = exportResponse.ExportDescription.ExportArn;
         core.setOutput('export-arn', exportArn);
