@@ -2,7 +2,7 @@
   "name": "dynamodb-export-action",
   "author": "koki-develop <kou.pg.0131@gmail.com>",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "exports": {
     ".": "./dist/index.js"
   },
