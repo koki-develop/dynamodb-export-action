@@ -21,10 +21,6 @@ export async function run(): Promise<void> {
 
     // Describe the table
     const table = await describeTable(inputs.table)
-    core.startGroup('Table details')
-    core.info(`Table name: ${table.name}`)
-    core.info(`Table ARN: ${table.arn}`)
-    core.endGroup()
 
     // Export the table
     const exp = await exportTable({
@@ -35,12 +31,11 @@ export async function run(): Promise<void> {
     })
     core.setOutput('export-arn', exp.arn)
     core.setOutput('export-id', exp.id)
-    core.info(
+    core.startGroup(
       `Exporting table ${table.name} to s3://${inputs.s3Bucket}/${inputs.s3Prefix} in ${inputs.exportFormat} format...`
     )
-    core.startGroup('Export details')
+    core.info(`Table ARN: ${table.arn}`)
     core.info(`Export ARN: ${exp.arn}`)
-    core.info(`Export ID: ${exp.id}`)
     core.endGroup()
 
     // Wait for the export to complete
